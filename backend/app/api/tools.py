@@ -1,7 +1,12 @@
 import os
 import shutil
 import urllib.parse
-import magic
+try:
+    import magic
+except ImportError:
+    magic = None
+    import logging
+    logging.warning("python-magic not available, fallback will be used.")
 from typing import List
 from fastapi import APIRouter, UploadFile, File, HTTPException, BackgroundTasks
 from fastapi.responses import FileResponse
@@ -43,7 +48,12 @@ def validate_and_save_file(file: UploadFile, allowed_mimes: List[str]) -> str:
         
     # Verify true file signature using python-magic
     try:
-        actual_mime = magic.from_file(temp_path, mime=True)
+        if magic:
+            actual_mime = magic.from_file(temp_path, mime=True)
+        else:
+            import mimetypes
+            actual_mime, _ = mimetypes.guess_type(file.filename)
+            actual_mime = actual_mime or "application/octet-stream"
     except Exception as e:
         os.remove(temp_path)
         raise HTTPException(status_code=500, detail="Failed to verify file format.")
