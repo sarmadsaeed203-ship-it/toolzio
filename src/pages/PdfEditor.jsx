@@ -58,7 +58,7 @@ function EditorCore() {
         ) : (
           <div className="flex flex-col items-center">
             <UploadCard 
-              title="Open PDF Document"
+              title="Open PDF Studio"
               description="Drag and drop your .pdf files here to start editing"
               accept=".pdf,application/pdf"
               onUpload={handleFileUpload}
@@ -94,8 +94,8 @@ export function PdfEditor() {
   return (
     <ToolLayout 
       ogImage="https://toolzio.com/og-image.jpg"
-      title="PDF Editor" 
-      description="Edit, merge, split, and organize PDFs online with our premium PDF Editor."
+      title="⭐ PDF Studio" 
+      description="Merge, Split, Rotate, Reorder and Organize PDFs in one professional workspace."
     >
       <EditorProvider>
         <EditorCore />

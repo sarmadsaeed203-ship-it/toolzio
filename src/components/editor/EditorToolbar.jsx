@@ -89,21 +89,21 @@ export function EditorToolbar({ onAddFiles, isUploading }) {
   return (
     <div className="h-14 border-b border-gray-200 bg-white flex items-center justify-between px-4 shadow-sm z-10">
       <div className="flex items-center space-x-2">
-        <Button variant="ghost" size="icon" onClick={undo} disabled={!canUndo} title="Undo">
+        <Button variant="ghost" size="icon" onClick={undo} disabled={!canUndo} title="Undo" aria-label="Undo">
           <Undo className="w-4 h-4" />
         </Button>
-        <Button variant="ghost" size="icon" onClick={redo} disabled={!canRedo} title="Redo">
+        <Button variant="ghost" size="icon" onClick={redo} disabled={!canRedo} title="Redo" aria-label="Redo">
           <Redo className="w-4 h-4" />
         </Button>
         
         <div className="hidden md:flex w-px h-6 bg-gray-200 mx-2" />
         
         <div className="hidden md:flex items-center">
-          <Button variant="ghost" size="icon" onClick={handleZoomOut} title="Zoom Out">
+          <Button variant="ghost" size="icon" onClick={handleZoomOut} title="Zoom Out" aria-label="Zoom Out">
             <ZoomOut className="w-4 h-4" />
           </Button>
-          <span className="text-sm font-medium w-12 text-center">{zoom}%</span>
-          <Button variant="ghost" size="icon" onClick={handleZoomIn} title="Zoom In">
+          <span className="text-sm font-medium w-12 text-center" aria-live="polite">{zoom}%</span>
+          <Button variant="ghost" size="icon" onClick={handleZoomIn} title="Zoom In" aria-label="Zoom In">
             <ZoomIn className="w-4 h-4" />
           </Button>
         </div>
@@ -116,6 +116,7 @@ export function EditorToolbar({ onAddFiles, isUploading }) {
           onClick={() => rotateSelected(90)} 
           disabled={selectedPages.length === 0}
           title="Rotate Right"
+          aria-label="Rotate Right"
         >
           <RotateCw className="w-4 h-4" />
         </Button>
@@ -125,6 +126,7 @@ export function EditorToolbar({ onAddFiles, isUploading }) {
           onClick={deleteSelected} 
           disabled={selectedPages.length === 0}
           title="Delete Pages"
+          aria-label="Delete Pages"
           className="text-red-500 hover:text-red-600 hover:bg-red-50"
         >
           <Trash2 className="w-4 h-4" />

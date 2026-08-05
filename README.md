@@ -1,76 +1,101 @@
-# Toolzio
+<div align="center">
+  <h1>Toolzio</h1>
+  <p><b>One workspace for every file. Convert, edit, compress, and organize documents and images securely.</b></p>
+</div>
 
-![Toolzio Banner](https://placehold.co/1200x400/3b82f6/white?text=Toolzio)
+<br />
 
-Toolzio is a blazing-fast, privacy-first suite of online PDF tools. 
+## 🌟 Overview
+Toolzio is a premium, open-source SaaS application for comprehensive file manipulation. Instead of relying on multiple fragmented tools, Toolzio provides a unified interface with desktop-class tools operating entirely within the browser. 
 
-## Features
+Our flagship feature, **PDF Studio**, enables users to merge, split, rotate, reorder, and organize massive PDFs (up to 300+ pages) in an ultra-responsive, zero-lag React workspace.
 
-- **PDF to Word**: Convert your PDFs accurately into editable `.docx` files.
-- **Word to PDF**: Generate high-quality PDFs from Word documents.
-- **Merge PDF**: Combine multiple PDF files in exactly the order you need.
-- **Split PDF**: Extract single pages or split PDFs effortlessly.
-- **Compress PDF**: Reduce file size while preserving quality.
-- **Privacy First**: Files are processed locally on the backend and deleted immediately after conversion.
+## ✨ Features
+- **⭐ PDF Studio**: A professional drag-and-drop workspace for manipulating PDF pages. Features virtualization for large files, Undo/Redo history, and seamless batch processing.
+- **PDF to Word**: Extract editable text and formatting from PDF files into `.docx`.
+- **Word to PDF**: Convert `.docx` documents securely into immutable PDFs.
+- **Compress PDF**: Reduce file sizes drastically while maintaining readable visual fidelity.
+- **Security-First**: All uploaded documents are processed securely and temporary files are automatically cleaned up immediately after download.
 
-## Tech Stack
+## 🚀 Technology Stack
+**Frontend (React/Vite)**
+- React 18
+- Tailwind CSS
+- `react-pdf` (for rendering PDFs in-browser)
+- `@hello-pangea/dnd` (for accessible drag-and-drop)
+- `lucide-react` (icons)
+- React Router DOM
+- React Helmet Async (SEO)
 
-### Frontend
-- **React.js (Vite)**
-- **TailwindCSS** for styling
-- **React Router** for navigation
-- **React Helmet Async** for SEO management
+**Backend (FastAPI)**
+- FastAPI (Python 3.11+)
+- `PyPDF2` (for PDF manipulation)
+- `pdf2docx` (for PDF -> Word conversion)
+- `docx2pdf` (for Word -> PDF conversion)
 
-### Backend
-- **Python (FastAPI)**
-- **LibreOffice** for Document Conversions
-- **PyPDF2** for PDF Manipulation
-- **Docker** for containerized deployment
-
-## Folder Structure
-
+## 📁 Folder Structure
 ```
 toolzio/
-├── backend/            # FastAPI Python Application
-│   ├── app/            # Core logic and configuration
-│   ├── api/            # Route handlers
-│   ├── uploads/        # Temporary upload storage (auto-cleaned)
-│   ├── outputs/        # Temporary output storage (auto-cleaned)
-│   ├── Dockerfile
-│   └── requirements.txt
-├── src/                # React Frontend
-│   ├── components/     # UI Components
-│   ├── pages/          # React Router Pages
-│   └── api/            # API connection logic
-├── public/             # Static Assets (favicon, sitemap, robots)
-├── package.json
-├── render.yaml         # Render Deployment Blueprint
-└── vercel.json         # Vercel Configuration
+├── backend/
+│   ├── app/
+│   │   ├── api/
+│   │   │   └── tools.py         # FastAPI Endpoints
+│   │   └── services/
+│   │       ├── pdf_editor/      # PDF Studio Core Engine
+│   │       └── ...              # Conversion services
+│   └── main.py                  # Backend Entrypoint
+├── src/
+│   ├── components/
+│   │   ├── editor/              # PDF Studio React Components
+│   │   ├── features/            # Feature Cards & Layout
+│   │   ├── layout/              # Header/Footer
+│   │   ├── shared/              # Reusable UI (Buttons, Alerts)
+│   │   └── tool/                # Upload Cards & Tool Wrappers
+│   ├── pages/                   # Route Pages (Home, PdfEditor, etc.)
+│   ├── api/                     # Axios Interceptors
+│   └── App.jsx                  # Main Routing
+└── public/
+    └── favicon.ico
 ```
 
-## Local Development
+## 🛠️ Installation & Local Development
 
-### 1. Start the Backend
+### 1. Clone the repository
 ```bash
-cd backend
-python -m venv venv
-source venv/bin/activate  # On Windows: .\venv\Scripts\activate
-pip install -r requirements.txt
-uvicorn main:app --reload
+git clone https://github.com/yourusername/toolzio.git
+cd toolzio
 ```
 
-*Note: For Word to PDF conversions to work locally, LibreOffice must be installed and added to your system PATH.*
-
-### 2. Start the Frontend
+### 2. Frontend Setup
 ```bash
-# In a new terminal at the project root
 npm install
 npm run dev
 ```
+The frontend will start on `http://localhost:5173`.
 
-## Deployment
+### 3. Backend Setup
+```bash
+cd backend
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+pip install -r requirements.txt
+python -m uvicorn main:app --host 127.0.0.1 --port 8000 --reload
+```
 
-Refer to [LAUNCH_GUIDE.md](./LAUNCH_GUIDE.md) for a comprehensive, step-by-step production deployment guide.
+## 🌍 Environment Variables
+To connect the frontend to a remote backend, add an `.env` file to the root:
+```
+VITE_API_URL=https://your-backend-url.com/api
+```
 
-- **Frontend**: Deploy to Vercel (zero-config Vite support).
-- **Backend**: Deploy to Render using the included Dockerfile.
+## ☁️ Deployment
+Toolzio is designed for seamless deployment on Vercel:
+1. Connect your GitHub repository to Vercel.
+2. Vercel will automatically detect the Vite frontend and build it.
+3. The `vercel.json` file configures Serverless Functions to serve the FastAPI backend out of the `backend/main.py` entrypoint on the `/api/*` route.
+
+## 🤝 Contributing
+Contributions are welcome! If you'd like to add a new tool (e.g., Image Converter, OCR), please read the contributing guidelines and submit a Pull Request. 
+
+## 📝 License
+This project is licensed under the MIT License.

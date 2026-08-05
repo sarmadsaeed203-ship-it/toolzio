@@ -49,7 +49,10 @@ export function Footer() {
         </div>
         
         <div className="pt-8 border-t border-[#EAEAEA] flex flex-col md:flex-row items-center justify-between gap-6 text-sm text-muted-foreground font-light">
-          <p>© {new Date().getFullYear()} Toolzio Inc. All rights reserved.</p>
+          <div className="flex items-center gap-4">
+            <p>© {new Date().getFullYear()} Toolzio Inc. All rights reserved.</p>
+            <span className="px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 text-xs font-medium">v1.0.0</span>
+          </div>
           <div className="flex items-center gap-6">
             <a href="#" className="hover:text-[#111111] transition-colors">Privacy Policy</a>
             <a href="#" className="hover:text-[#111111] transition-colors">Terms of Service</a>
