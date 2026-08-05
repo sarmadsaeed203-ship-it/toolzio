@@ -1,2 +1,10 @@
+fastapi==0.141.1
+uvicorn==0.52.1
+python-multipart==0.0.32
+pydantic-settings==2.14.2
+pdf2docx==0.5.13
+pypdf==6.14.2
+reportlab==5.0.0
+docx2pdf==0.1.8
 python-magic; sys_platform != "win32"
 python-magic-bin; sys_platform == "win32"
