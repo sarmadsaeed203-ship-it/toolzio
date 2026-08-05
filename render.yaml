@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: toolzio-api
+    env: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    autoDeploy: false
+    envVars:
+      - key: BACKEND_CORS_ORIGINS
+        value: '["https://toolzio.com"]' # Update this once frontend is deployed
+    plan: free
