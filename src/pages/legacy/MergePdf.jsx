@@ -1,8 +1,8 @@
-import { ToolLayout } from "../components/tool/ToolLayout"
-import { UploadCard } from "../components/tool/UploadCard"
-import { ProcessingCard } from "../components/tool/ProcessingCard"
-import { DownloadCard } from "../components/tool/DownloadCard"
-import { useToolProcessing } from "../hooks/useToolProcessing"
+import { ToolLayout } from "../../components/tool/ToolLayout"
+import { UploadCard } from "../../components/tool/UploadCard"
+import { ProcessingCard } from "../../components/tool/ProcessingCard"
+import { DownloadCard } from "../../components/tool/DownloadCard"
+import { useToolProcessing } from "../../hooks/useToolProcessing"
 import { Combine } from "lucide-react"
 
 export function MergePdf() {

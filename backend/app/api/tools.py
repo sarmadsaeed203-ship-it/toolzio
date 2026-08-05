@@ -211,3 +211,45 @@ async def api_compress_pdf(background_tasks: BackgroundTasks, file: UploadFile =
             "Access-Control-Expose-Headers": "Content-Disposition"
         }
     )
+
+import json
+from ..services.pdf_editor.models import EditorPayload
+from ..services.pdf_editor.core import process_edit_pdf
+from fastapi import Form
+
+@router.post("/edit-pdf")
+async def api_edit_pdf(background_tasks: BackgroundTasks, files: List[UploadFile] = File(...), operations: str = Form(...)):
+    if not files:
+        raise HTTPException(status_code=400, detail="No files uploaded.")
+        
+    try:
+        payload_dict = json.loads(operations)
+        payload = EditorPayload(**payload_dict)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Invalid operations JSON format: {str(e)}")
+        
+    temp_paths = []
+    for f in files:
+        temp_paths.append(validate_and_save_file(f, ["application/pdf"]))
+        
+    output_filename = "edited_document.pdf"
+    output_path = os.path.join(settings.OUTPUTS_DIR, get_unique_filename(output_filename))
+
+    try:
+        await run_in_threadpool(process_edit_pdf, temp_paths, payload, output_path)
+    except Exception as e:
+        background_tasks.add_task(cleanup_files, temp_paths + [output_path])
+        raise HTTPException(status_code=500, detail=str(e))
+        
+    background_tasks.add_task(cleanup_files, temp_paths + [output_path], delay=2)
+
+    encoded_filename = urllib.parse.quote(output_filename)
+
+    return FileResponse(
+        path=output_path,
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": f"attachment; filename*=UTF-8''{encoded_filename}",
+            "Access-Control-Expose-Headers": "Content-Disposition"
+        }
+    )

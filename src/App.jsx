@@ -6,9 +6,10 @@ import { AnalyticsProvider } from "./components/AnalyticsProvider"
 const Home = lazy(() => import("./pages/Home").then(m => ({ default: m.Home })))
 const PdfToWord = lazy(() => import("./pages/PdfToWord").then(m => ({ default: m.PdfToWord })))
 const WordToPdf = lazy(() => import("./pages/WordToPdf").then(m => ({ default: m.WordToPdf })))
-const MergePdf = lazy(() => import("./pages/MergePdf").then(m => ({ default: m.MergePdf })))
-const SplitPdf = lazy(() => import("./pages/SplitPdf").then(m => ({ default: m.SplitPdf })))
+const MergePdf = lazy(() => import("./pages/legacy/MergePdf").then(m => ({ default: m.MergePdf })))
+const SplitPdf = lazy(() => import("./pages/legacy/SplitPdf").then(m => ({ default: m.SplitPdf })))
 const CompressPdf = lazy(() => import("./pages/CompressPdf").then(m => ({ default: m.CompressPdf })))
+const PdfEditor = lazy(() => import("./pages/PdfEditor").then(m => ({ default: m.PdfEditor })))
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
               <Route path="/merge-pdf" element={<MergePdf />} />
               <Route path="/split-pdf" element={<SplitPdf />} />
               <Route path="/compress-pdf" element={<CompressPdf />} />
+              <Route path="/pdf-editor" element={<PdfEditor />} />
             </Routes>
           </Suspense>
         </AnalyticsProvider>

@@ -1,7 +1,5 @@
 import { useState } from "react"
-import { UploadCloud, FileType2, FileImage, FileText, Lock, Zap, Globe, UserCheck } from "lucide-react"
-import { Button } from "@/components/ui/button"
-
+import { UploadCloud, Lock, Zap, Globe, UserCheck } from "lucide-react"
 export function Hero({ onFileTypeSelect }) {
   const [isDragging, setIsDragging] = useState(false)
 
