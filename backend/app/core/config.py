@@ -9,9 +9,16 @@ class Settings(BaseSettings):
     
     # Storage settings
     BASE_DIR: str = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    UPLOADS_DIR: str = os.path.join(BASE_DIR, "uploads")
-    OUTPUTS_DIR: str = os.path.join(BASE_DIR, "outputs")
-    TEMP_DIR: str = os.path.join(BASE_DIR, "temp")
+    
+    # On Vercel, the filesystem is read-only except for /tmp
+    if os.environ.get("VERCEL"):
+        UPLOADS_DIR: str = "/tmp/uploads"
+        OUTPUTS_DIR: str = "/tmp/outputs"
+        TEMP_DIR: str = "/tmp/temp"
+    else:
+        UPLOADS_DIR: str = os.path.join(BASE_DIR, "uploads")
+        OUTPUTS_DIR: str = os.path.join(BASE_DIR, "outputs")
+        TEMP_DIR: str = os.path.join(BASE_DIR, "temp")
 
     class Config:
         case_sensitive = True
