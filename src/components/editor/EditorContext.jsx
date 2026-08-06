@@ -76,8 +76,10 @@ export function EditorProvider({ children }) {
     if (selectedPages.length === 0) return;
     const newGroups = groups.map(g => ({
       ...g,
-      pages: g.pages.map(p => 
-        selectedPages.includes(p.id) ? { ...p, rotation: (p.rotation + angle) % 360 } : p
+      pages: g.pages.map(p =>
+        selectedPages.includes(p.id)
+          ? { ...p, rotation: ((p.rotation + angle) % 360 + 360) % 360 }
+          : p
       )
     }));
     saveToHistory(newGroups);

@@ -5,7 +5,7 @@ import {
 } from "lucide-react"
 
 const ALL_TOOLS = [
-  { id: "pdf-editor", category: "pdf", title: "⭐ PDF Studio", description: "Merge, Split, Rotate, Reorder and Organize PDFs in one professional workspace.", icon: FileEdit, link: "/pdf-editor" },
+  { id: "pdf-editor", category: "pdf", title: "PDF Studio", description: "Merge, Split, Rotate, Reorder and Organize PDFs in one professional workspace.", icon: FileEdit, link: "/pdf-editor" },
   { id: "pdf-to-word", category: "pdf", title: "PDF to Word", description: "Convert PDF documents to editable Word files.", icon: FileText, link: "/pdf-to-word" },
   { id: "word-to-pdf", category: "document", title: "Word to PDF", description: "Convert Word documents to PDF easily.", icon: FileType, link: "/word-to-pdf" },
   { id: "compress-pdf", category: "pdf", title: "Compress PDF", description: "Reduce file size while optimizing quality.", icon: FileArchive, link: "/compress-pdf" },

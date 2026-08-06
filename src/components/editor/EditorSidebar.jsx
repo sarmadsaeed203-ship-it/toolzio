@@ -131,8 +131,8 @@ export function EditorSidebar() {
   };
 
   return (
-    <div className="w-32 md:w-64 flex-shrink-0 bg-white border-r border-gray-200 flex flex-col h-full overflow-y-auto">
-      <div className="p-3 border-b border-gray-100 bg-gray-50 sticky top-0 z-10 hidden md:block">
+    <div className="bg-white border-r border-gray-200 flex flex-col h-full overflow-y-auto shrink-0" style={{ width: '240px' }}>
+      <div className="h-12 px-4 border-b border-gray-100 bg-gray-50 flex items-center sticky top-0 z-10">
         <h3 className="text-sm font-semibold text-gray-700">Pages</h3>
       </div>
       

@@ -1,73 +1,79 @@
 import React, { useState } from 'react';
 import { useEditor } from './EditorContext';
-import { Undo, Redo, ZoomIn, ZoomOut, Trash2, RotateCw, Download, FileUp, Loader2 } from 'lucide-react';
-import { Button } from "../ui/button";
+import {
+  Undo, Redo, ZoomIn, ZoomOut, Trash2, RotateCw, RotateCcw,
+  Download, FileUp, Loader2, ChevronLeft, ChevronRight,
+} from 'lucide-react';
+import { Button } from '../ui/button';
 
-export function EditorToolbar({ onAddFiles, isUploading }) {
-  const { zoom, setZoom, undo, redo, canUndo, canRedo, rotateSelected, deleteSelected, selectedPages, files, groups } = useEditor();
+// Vertical separator helper
+function Sep() {
+  return <div className="w-px h-5 bg-gray-200 mx-1 shrink-0" />;
+}
+
+export function EditorToolbar({ onAddFiles, isUploading, onToggleProperties, propertiesOpen }) {
+  const {
+    zoom, setZoom,
+    undo, redo, canUndo, canRedo,
+    rotateSelected, deleteSelected,
+    selectedPages, files, groups,
+  } = useEditor();
+
   const [isProcessing, setIsProcessing] = useState(false);
-  const [error, setError] = useState(null);
+  const [downloadError, setDownloadError] = useState(null);
 
-  const handleZoomIn = () => setZoom(z => Math.min(z + 25, 300));
-  const handleZoomOut = () => setZoom(z => Math.max(z - 25, 25));
+  const handleZoomIn  = () => setZoom(z => Math.min(z + 10, 300));
+  const handleZoomOut = () => setZoom(z => Math.max(z - 10, 25));
+  const handleFitWidth = () => setZoom(100);
 
   const handleDownload = async () => {
     setIsProcessing(true);
-    setError(null);
+    setDownloadError(null);
     try {
-      // Build the JSON payload
-      // Our generic schema requires: { pages: [ { sourceFile: 0, page: 0, rotation: 0, deleted: false, crop: null } ] }
-      const payload = {
-        pages: []
-      };
+      const payload = { pages: [] };
 
-      // We preserve the order by flattening groups
       groups.forEach(group => {
         group.pages.forEach(p => {
           if (!p.deleted) {
-            // Find the index of the source file
             const fileIndex = files.findIndex(f => f.id === p.sourceFileId);
             payload.pages.push({
               sourceFile: fileIndex,
               page: p.pageIndex,
               rotation: p.rotation,
-              deleted: p.deleted
+              deleted: false,
             });
           }
         });
       });
 
-      if (payload.pages.length === 0) {
-        throw new Error("No pages to export.");
-      }
+      if (payload.pages.length === 0) throw new Error('No pages to export.');
 
       const formData = new FormData();
-      files.forEach(f => {
-        formData.append("files", f.file);
-      });
-      formData.append("operations", JSON.stringify(payload));
+      files.forEach(f => formData.append('files', f.file));
+      formData.append('operations', JSON.stringify(payload));
 
-      // Use absolute or relative depending on environment
-      const apiUrl = import.meta.env.VITE_API_URL || "";
-      const response = await fetch(`${apiUrl}/api/v1/tools/edit-pdf`, {
-        method: "POST",
-        body: formData
+      // API_V1_STR in config.py is "/api", so route is /api/tools/edit-pdf
+      const apiBase = import.meta.env.VITE_API_URL || '';
+      const response = await fetch(`${apiBase}/api/tools/edit-pdf`, {
+        method: 'POST',
+        body: formData,
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || "Failed to edit PDF");
+        let detail = 'Failed to edit PDF.';
+        try {
+          const errJson = await response.json();
+          detail = errJson.detail || detail;
+        } catch (_e) { /* ignore parse error — use default message */ }
+        throw new Error(detail);
       }
 
-      // Download the result
       const blob = await response.blob();
       const contentDisposition = response.headers.get('Content-Disposition');
       let filename = 'edited_document.pdf';
       if (contentDisposition) {
-        const match = contentDisposition.match(/filename\*?=['"]?(?:UTF-\d['"]*)?([^;\r\n"']*)['"]?/i);
-        if (match && match[1]) {
-          filename = decodeURIComponent(match[1]);
-        }
+        const m = contentDisposition.match(/filename\*?=['"]?(?:UTF-\d['"]*)?(.*?)(?:['"]|$)/i);
+        if (m?.[1]) filename = decodeURIComponent(m[1]);
       }
 
       const url = window.URL.createObjectURL(blob);
@@ -80,86 +86,167 @@ export function EditorToolbar({ onAddFiles, isUploading }) {
       window.URL.revokeObjectURL(url);
     } catch (err) {
       console.error(err);
-      setError(err.message);
+      setDownloadError(err.message);
+      // Auto-clear after 6 s
+      setTimeout(() => setDownloadError(null), 6000);
     } finally {
       setIsProcessing(false);
     }
   };
 
+  const hasSelection = selectedPages.length > 0;
+
   return (
-    <div className="h-14 border-b border-gray-200 bg-white flex items-center justify-between px-4 shadow-sm z-10">
-      <div className="flex items-center space-x-2">
-        <Button variant="ghost" size="icon" onClick={undo} disabled={!canUndo} title="Undo" aria-label="Undo">
-          <Undo className="w-4 h-4" />
-        </Button>
-        <Button variant="ghost" size="icon" onClick={redo} disabled={!canRedo} title="Redo" aria-label="Redo">
-          <Redo className="w-4 h-4" />
-        </Button>
-        
-        <div className="hidden md:flex w-px h-6 bg-gray-200 mx-2" />
-        
-        <div className="hidden md:flex items-center">
-          <Button variant="ghost" size="icon" onClick={handleZoomOut} title="Zoom Out" aria-label="Zoom Out">
-            <ZoomOut className="w-4 h-4" />
+    <div className="relative">
+      {/* Main toolbar row */}
+      <div className="h-12 border-b border-gray-200 bg-white flex items-center px-3 gap-1 shadow-sm z-10 flex-wrap">
+
+        {/* ── Group 1: History ── */}
+        <div className="flex items-center gap-0.5">
+          <Button
+            variant="ghost" size="icon" onClick={undo} disabled={!canUndo}
+            title="Undo (Ctrl+Z)" aria-label="Undo"
+            className="h-8 w-8"
+          >
+            <Undo className="w-3.5 h-3.5" />
           </Button>
-          <span className="text-sm font-medium w-12 text-center" aria-live="polite">{zoom}%</span>
-          <Button variant="ghost" size="icon" onClick={handleZoomIn} title="Zoom In" aria-label="Zoom In">
-            <ZoomIn className="w-4 h-4" />
+          <Button
+            variant="ghost" size="icon" onClick={redo} disabled={!canRedo}
+            title="Redo (Ctrl+Y)" aria-label="Redo"
+            className="h-8 w-8"
+          >
+            <Redo className="w-3.5 h-3.5" />
           </Button>
         </div>
 
-        <div className="w-px h-6 bg-gray-200 mx-2" />
-        
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          onClick={() => rotateSelected(90)} 
-          disabled={selectedPages.length === 0}
-          title="Rotate Right"
-          aria-label="Rotate Right"
+        <Sep />
+
+        {/* ── Group 2: Zoom ── */}
+        <div className="flex items-center gap-0.5">
+          <Button
+            variant="ghost" size="icon" onClick={handleZoomOut}
+            title="Zoom Out" aria-label="Zoom Out"
+            className="h-8 w-8"
+          >
+            <ZoomOut className="w-3.5 h-3.5" />
+          </Button>
+          <button
+            onClick={handleFitWidth}
+            className="w-14 text-center text-xs font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded px-1 py-1 transition-colors"
+            title="Click to reset to Fit Width"
+            aria-live="polite"
+          >
+            {zoom}%
+          </button>
+          <Button
+            variant="ghost" size="icon" onClick={handleZoomIn}
+            title="Zoom In" aria-label="Zoom In"
+            className="h-8 w-8"
+          >
+            <ZoomIn className="w-3.5 h-3.5" />
+          </Button>
+        </div>
+
+        <Sep />
+
+        {/* ── Group 3: Rotate ── */}
+        <div className="flex items-center gap-0.5">
+          <Button
+            variant="ghost" size="icon"
+            onClick={() => rotateSelected(-90)}
+            disabled={!hasSelection}
+            title="Rotate Left 90°" aria-label="Rotate Left"
+            className="h-8 w-8"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+          </Button>
+          <Button
+            variant="ghost" size="icon"
+            onClick={() => rotateSelected(90)}
+            disabled={!hasSelection}
+            title="Rotate Right 90°" aria-label="Rotate Right"
+            className="h-8 w-8"
+          >
+            <RotateCw className="w-3.5 h-3.5" />
+          </Button>
+        </div>
+
+        <Sep />
+
+        {/* ── Group 4: Delete ── */}
+        <Button
+          variant="ghost" size="icon"
+          onClick={deleteSelected}
+          disabled={!hasSelection}
+          title="Delete Selected Pages" aria-label="Delete Pages"
+          className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50"
         >
-          <RotateCw className="w-4 h-4" />
+          <Trash2 className="w-3.5 h-3.5" />
         </Button>
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          onClick={deleteSelected} 
-          disabled={selectedPages.length === 0}
-          title="Delete Pages"
-          aria-label="Delete Pages"
-          className="text-red-500 hover:text-red-600 hover:bg-red-50"
-        >
-          <Trash2 className="w-4 h-4" />
-        </Button>
+
+        {/* Spacer */}
+        <div className="flex-1" />
+
+        {/* ── Group 5: File Actions ── */}
+        <div className="flex items-center gap-2">
+          {/* Add PDF */}
+          <label className="cursor-pointer">
+            <input
+              type="file"
+              className="hidden"
+              accept=".pdf,application/pdf"
+              multiple
+              onChange={e => {
+                if (e.target.files.length > 0) {
+                  onAddFiles(Array.from(e.target.files));
+                  e.target.value = null;
+                }
+              }}
+            />
+            <div className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors h-8">
+              {isUploading
+                ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                : <FileUp className="w-3.5 h-3.5" />
+              }
+              <span className="hidden sm:inline text-xs">Add PDF</span>
+            </div>
+          </label>
+
+          {/* Download */}
+          <Button
+            onClick={handleDownload}
+            disabled={isProcessing}
+            className="h-8 bg-blue-600 hover:bg-blue-700 text-white shadow-sm text-xs gap-1.5"
+          >
+            {isProcessing
+              ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              : <Download className="w-3.5 h-3.5" />
+            }
+            <span className="hidden sm:inline">Download</span>
+          </Button>
+
+          {/* Toggle Properties Panel */}
+          <Button
+            variant="ghost" size="icon"
+            onClick={onToggleProperties}
+            title={propertiesOpen ? 'Hide Properties' : 'Show Properties'}
+            aria-label="Toggle Properties"
+            className="h-8 w-8 hidden lg:flex"
+          >
+            {propertiesOpen
+              ? <ChevronRight className="w-3.5 h-3.5" />
+              : <ChevronLeft className="w-3.5 h-3.5" />
+            }
+          </Button>
+        </div>
       </div>
 
-      <div className="flex items-center space-x-3">
-        {error && <span className="text-sm text-red-500 mr-2">{error}</span>}
-        
-        <label className="cursor-pointer">
-          <input 
-            type="file" 
-            className="hidden" 
-            accept=".pdf,application/pdf" 
-            multiple 
-            onChange={(e) => {
-              if (e.target.files.length > 0) {
-                onAddFiles(Array.from(e.target.files));
-                e.target.value = null;
-              }
-            }}
-          />
-          <div className="flex items-center px-3 py-1.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors">
-            {isUploading ? <Loader2 className="w-4 h-4 md:mr-2 animate-spin" /> : <FileUp className="w-4 h-4 md:mr-2" />}
-            <span className="hidden md:inline">Add PDF</span>
-          </div>
-        </label>
-        
-        <Button onClick={handleDownload} disabled={isProcessing} className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm">
-          {isProcessing ? <Loader2 className="w-4 h-4 md:mr-2 animate-spin" /> : <Download className="w-4 h-4 md:mr-2" />}
-          <span className="hidden md:inline">Download</span>
-        </Button>
-      </div>
+      {/* Error Toast */}
+      {downloadError && (
+        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 z-50 bg-red-600 text-white text-sm px-4 py-2.5 rounded-lg shadow-lg max-w-sm text-center animate-in fade-in slide-in-from-top-2">
+          ⚠ {downloadError}
+        </div>
+      )}
     </div>
   );
 }
