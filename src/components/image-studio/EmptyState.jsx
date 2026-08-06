@@ -14,14 +14,13 @@ const FEATURES = [
 ];
 
 export function EmptyState() {
-  const { loadImage } = useImageStudio();
+  const { loadImages } = useImageStudio();
   const [isDragging, setIsDragging] = useState(false);
   const inputRef = useRef(null);
 
   const handleFiles = useCallback((files) => {
-    const file = Array.from(files).find(f => f.type.startsWith('image/'));
-    if (file) loadImage(file);
-  }, [loadImage]);
+    if (files.length) loadImages(files);
+  }, [loadImages]);
 
   const onDrop = (e) => {
     e.preventDefault();
@@ -113,7 +112,7 @@ export function EmptyState() {
           >
             Upload Image
           </button>
-          <input ref={inputRef} type="file" className="hidden" accept="image/*" multiple={false}
+          <input ref={inputRef} type="file" className="hidden" accept="image/*" multiple
             onChange={e => e.target.files?.[0] && handleFiles(e.target.files)} />
         </div>
 

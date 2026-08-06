@@ -14,9 +14,12 @@
  */
 
 import {
-  Maximize2, RotateCw, SlidersHorizontal, Download,
+  Maximize2, RotateCw, SlidersHorizontal, Download, Eraser, FileArchive, UserSquare2
 } from 'lucide-react';
 import { ResizePanel, RotateFlipPanel, AdjustmentsPanel, ExportSettingsPanel } from './ToolPanels';
+import { BackgroundPanel } from './AITools';
+import { CompressPanel } from './CompressPanel';
+import { PassportPanel } from './PassportPanel';
 
 export const TOOLS = [
   {
@@ -47,12 +50,27 @@ export const TOOLS = [
     panel: ExportSettingsPanel,
     group: 'output',
   },
-  // FUTURE TOOLS — uncomment and add panel component when ready:
-  // { id: 'crop',             label: 'Crop',             icon: Crop,         panel: CropPanel,             group: 'transform' },
-  // { id: 'background',       label: 'Remove BG',        icon: Eraser,       panel: BackgroundPanel,       group: 'ai'        },
-  // { id: 'upscale',          label: 'AI Upscale',       icon: Sparkles,     panel: UpscalePanel,          group: 'ai'        },
-  // { id: 'blur',             label: 'Blur',             icon: Blend,        panel: BlurPanel,             group: 'effects'   },
-  // { id: 'watermark',        label: 'Watermark',        icon: Type,         panel: WatermarkPanel,        group: 'output'    },
+  {
+    id: 'compress',
+    label: 'Compress',
+    icon: FileArchive,
+    panel: CompressPanel,
+    group: 'output',
+  },
+  {
+    id: 'background',
+    label: 'Remove BG',
+    icon: Eraser,
+    panel: BackgroundPanel,
+    group: 'ai',
+  },
+  {
+    id: 'passport',
+    label: 'Passport Maker',
+    icon: UserSquare2,
+    panel: PassportPanel,
+    group: 'ai',
+  },
 ];
 
 export function getToolById(id) {

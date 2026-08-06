@@ -206,6 +206,8 @@ export function ExportSettingsPanel() {
     { value: 'image/png',  label: 'PNG',  desc: 'Lossless' },
     { value: 'image/jpeg', label: 'JPEG', desc: 'Smaller' },
     { value: 'image/webp', label: 'WebP', desc: 'Modern' },
+    { value: 'image/bmp',  label: 'BMP',  desc: 'Uncompressed' },
+    { value: 'image/tiff', label: 'TIFF', desc: 'Professional' },
   ];
 
   const size = estimatedSize();
@@ -232,7 +234,7 @@ export function ExportSettingsPanel() {
               }`}
             >
               {f.label}
-              <span className={`text-[10px] font-normal mt-0.5 ${edits.format === f.value ? 'text-indigo-400' : 'text-gray-400'}`}>
+              <span className={`text-[9px] font-normal mt-0.5 ${edits.format === f.value ? 'text-indigo-400' : 'text-gray-400'}`}>
                 {f.desc}
               </span>
             </button>

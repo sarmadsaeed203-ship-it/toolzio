@@ -1,10 +1,19 @@
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { ArrowRight } from "lucide-react"
-import { Link } from "react-router-dom"
+import { useNavigate } from "react-router-dom"
 
 export function ToolCard({ icon: Icon, title, description, link }) {
+  const navigate = useNavigate()
+
+  const handleClick = () => {
+    if (link) {
+      navigate(link)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+  }
+
   const CardContent = (
-    <Card className="group relative overflow-hidden cursor-pointer border-[#EAEAEA] bg-white transition-all duration-300 hover:border-[#111111]/10 hover:shadow-lg hover:-translate-y-1 h-full">
+    <Card onClick={handleClick} className="group relative overflow-hidden cursor-pointer border-[#EAEAEA] bg-white transition-all duration-300 hover:border-[#111111]/10 hover:shadow-lg hover:-translate-y-1 h-full">
       <CardHeader className="p-8">
         <div className="mb-5 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-primary/5 text-primary transition-colors duration-300 group-hover:bg-primary group-hover:text-primary-foreground">
           <Icon className="h-6 w-6" strokeWidth={1.5} />
@@ -22,10 +31,6 @@ export function ToolCard({ icon: Icon, title, description, link }) {
       </CardHeader>
     </Card>
   )
-
-  if (link) {
-    return <Link to={link} className="block h-full">{CardContent}</Link>
-  }
 
   return CardContent
 }

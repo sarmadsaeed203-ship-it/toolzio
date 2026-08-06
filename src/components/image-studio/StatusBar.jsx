@@ -1,4 +1,5 @@
 import { useImageStudio } from './ImageStudioContext';
+import { Layers, ImageIcon } from 'lucide-react';
 
 function fmt(bytes) {
   if (!bytes || bytes === 0) return '--';
@@ -16,7 +17,7 @@ const FORMAT_LABEL = {
 };
 
 export function StatusBar() {
-  const { image, edits, estimatedSize } = useImageStudio();
+  const { image, edits, estimatedSize, batchFiles } = useImageStudio();
 
   if (!image) {
     return (
@@ -40,6 +41,12 @@ export function StatusBar() {
 
   return (
     <div className="h-8 bg-gray-50 border-t border-gray-100 flex items-center px-4 gap-3 shrink-0 overflow-hidden">
+      {batchFiles.length > 1 && (
+        <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 text-xs font-bold shadow-sm border border-indigo-200">
+          <Layers className="w-3.5 h-3.5" />
+          Batch Mode ({batchFiles.length})
+        </div>
+      )}
       <Pill accent>{outputFmt}</Pill>
       <span className="text-xs text-gray-500 font-medium tabular-nums">{w}×{h} px</span>
       <span className="text-gray-300 text-xs">·</span>

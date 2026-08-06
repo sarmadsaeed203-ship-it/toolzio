@@ -14,10 +14,14 @@ export const DEFAULT_EDITS = {
   crop: null,         // { x, y, w, h } px — null = no crop
   format: 'image/png',
   quality: 92,        // 0-100, for jpeg/webp
+  backgroundColor: 'transparent', // Added for background changer
 };
 
+import JSZip from 'jszip';
+
 export function ImageStudioProvider({ children }) {
-  const [image, setImage] = useState(null); // { file, src, originalWidth, originalHeight, name }
+  const [image, setImage] = useState(null); // { file, src, originalWidth, originalHeight, name, type }
+  const [batchFiles, setBatchFiles] = useState([]); // Array of File objects if batch mode
   const [edits, setEdits] = useState(DEFAULT_EDITS);
   const [history, setHistory] = useState([]);        // array of edits snapshots
   const [historyLabels, setHistoryLabels] = useState([]);
@@ -39,26 +43,34 @@ export function ImageStudioProvider({ children }) {
   }, []);
 
   /* ── Image Loading ───────────────────────────────────────── */
-  const loadImage = useCallback((file) => {
-    // Validate type
-    const validTypes = ['image/png', 'image/jpeg', 'image/webp', 'image/bmp', 'image/gif'];
-    if (!validTypes.includes(file.type)) {
-      addToast(`Unsupported format: ${file.type}`, 'error');
+  const loadImages = useCallback((files) => {
+    const validFiles = Array.from(files).filter(f => ['image/png', 'image/jpeg', 'image/webp', 'image/bmp', 'image/gif'].includes(f.type));
+    
+    if (validFiles.length === 0) {
+      addToast('No supported images found', 'error');
       return;
     }
-    const src = URL.createObjectURL(file);
+
+    if (validFiles.length > 1) {
+      setBatchFiles(validFiles);
+      addToast(`Batch mode: ${validFiles.length} images loaded`, 'success');
+    } else {
+      setBatchFiles([]);
+    }
+
+    const firstFile = validFiles[0];
+    const src = URL.createObjectURL(firstFile);
     const img = new Image();
     img.onload = () => {
-      // Revoke any old blob URL
       setImage(prev => {
         if (prev?.src?.startsWith('blob:')) URL.revokeObjectURL(prev.src);
         return {
-          file,
+          file: firstFile,
           src,
           originalWidth: img.naturalWidth,
           originalHeight: img.naturalHeight,
-          name: file.name.replace(/\.[^/.]+$/, ''),
-          type: file.type,
+          name: firstFile.name.replace(/\.[^/.]+$/, ''),
+          type: firstFile.type,
         };
       });
       setEdits({ ...DEFAULT_EDITS, outputWidth: img.naturalWidth, outputHeight: img.naturalHeight });
@@ -66,11 +78,13 @@ export function ImageStudioProvider({ children }) {
       setHistoryLabels([]);
       setActiveTool(null);
       setShowBeforeAfter(false);
-      addToast('Image loaded', 'success');
+      if (validFiles.length === 1) addToast('Image loaded', 'success');
     };
     img.onerror = () => addToast('Failed to load image', 'error');
     img.src = src;
   }, [addToast]);
+
+  const loadImage = useCallback((file) => loadImages([file]), [loadImages]);
 
   /* ── Edit Application ────────────────────────────────────── */
   const applyEdit = useCallback((newEdits, label = 'Edit') => {
@@ -97,7 +111,7 @@ export function ImageStudioProvider({ children }) {
   }, [image, addToast]);
 
   /* ── CSS shorthands for the canvas display ───────────────── */
-  const cssFilter = `brightness(${edits.brightness}%) contrast(${edits.contrast}%) saturate(${edits.saturation}%)`;
+  const cssFilter = `brightness(${edits.brightness}%) contrast(${edits.contrast}%) saturate(${edits.saturation}%) drop-shadow(0 0 0 ${edits.backgroundColor === 'transparent' ? 'rgba(0,0,0,0)' : edits.backgroundColor})`;
   const cssTransform = [
     `rotate(${edits.rotation}deg)`,
     `scaleX(${edits.flipH ? -1 : 1})`,
@@ -105,20 +119,26 @@ export function ImageStudioProvider({ children }) {
   ].join(' ');
 
   /* ── Export helpers ──────────────────────────────────────── */
-  const exportImage = useCallback(async (overrides = {}) => {
-    if (!image) return null;
-    const e = { ...edits, ...overrides };
-
+  const processSingleImage = async (imgFile, e) => {
+    const src = URL.createObjectURL(imgFile);
     const img = new Image();
     img.crossOrigin = 'anonymous';
     await new Promise((res, rej) => {
       img.onload = res; img.onerror = rej;
-      img.src = image.src;
+      img.src = src;
     });
 
     const isSwapped = e.rotation === 90 || e.rotation === 270;
-    const outW = e.outputWidth || image.originalWidth;
-    const outH = e.outputHeight || image.originalHeight;
+    
+    // Use the original aspect ratio to compute new dimensions if outputWidth/Height is missing
+    const origW = img.naturalWidth;
+    const origH = img.naturalHeight;
+    let outW = e.outputWidth || origW;
+    let outH = e.outputHeight || origH;
+
+    // For batch mode, if outputWidth/Height was changed, we need to respect it, but we might want to scale proportionally
+    // For simplicity, we assume outputWidth/Height are absolute targets if set.
+
     const canvasW = isSwapped ? outH : outW;
     const canvasH = isSwapped ? outW : outH;
 
@@ -130,18 +150,51 @@ export function ImageStudioProvider({ children }) {
     fCtx.filter = `brightness(${e.brightness}%) contrast(${e.contrast}%) saturate(${e.saturation}%)`;
     fCtx.drawImage(img, 0, 0);
 
-    // Step 2: apply transforms
+    // Step 2: apply transforms and background
     const out = Object.assign(document.createElement('canvas'), { width: canvasW, height: canvasH });
     const ctx = out.getContext('2d');
+    
+    if (e.backgroundColor !== 'transparent') {
+      ctx.fillStyle = e.backgroundColor;
+      ctx.fillRect(0, 0, canvasW, canvasH);
+    }
+
     ctx.save();
     ctx.translate(canvasW / 2, canvasH / 2);
     ctx.rotate((e.rotation * Math.PI) / 180);
     ctx.scale(e.flipH ? -1 : 1, e.flipV ? -1 : 1);
     ctx.drawImage(filterCanvas, -outW / 2, -outH / 2, outW, outH);
     ctx.restore();
+    URL.revokeObjectURL(src);
 
     return new Promise(resolve => out.toBlob(resolve, e.format, e.quality / 100));
-  }, [image, edits]);
+  };
+
+  const exportImage = useCallback(async (overrides = {}) => {
+    if (!image) return null;
+    const e = { ...edits, ...overrides };
+
+    if (batchFiles.length > 1) {
+      addToast('Processing batch...', 'info');
+      const zip = new JSZip();
+      
+      const ext = e.format === 'image/jpeg' ? 'jpg' : e.format.split('/')[1] || 'png';
+      
+      for (let i = 0; i < batchFiles.length; i++) {
+        const file = batchFiles[i];
+        const blob = await processSingleImage(file, e);
+        const baseName = file.name.replace(/\.[^/.]+$/, '');
+        zip.file(`${baseName}_edited.${ext}`, blob);
+      }
+      
+      const zipBlob = await zip.generateAsync({ type: 'blob' });
+      addToast('Batch complete!', 'success');
+      return zipBlob;
+    } else {
+      return await processSingleImage(image.file, e);
+    }
+  }, [image, edits, batchFiles, addToast]);
+
 
   /* ── Estimated file size ─────────────────────────────────── */
   const estimatedSize = useCallback((overrides = {}) => {
@@ -159,13 +212,13 @@ export function ImageStudioProvider({ children }) {
   }, [image, edits]);
 
   const value = {
-    image, edits, history, historyLabels,
+    image, edits, history, historyLabels, batchFiles,
     activeTool, setActiveTool,
     showBeforeAfter, setShowBeforeAfter,
     showHistory, setShowHistory,
     showExport, setShowExport,
     toasts, addToast, removeToast,
-    loadImage, applyEdit, undo, reset,
+    loadImage, loadImages, applyEdit, undo, reset,
     cssFilter, cssTransform,
     canUndo: history.length > 0,
     exportImage, estimatedSize,

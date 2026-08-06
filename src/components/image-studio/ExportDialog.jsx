@@ -21,7 +21,7 @@ const FORMATS = [
 ];
 
 export function ExportDialog() {
-  const { image, edits, showExport, setShowExport, exportImage, estimatedSize, addToast } = useImageStudio();
+  const { image, edits, showExport, setShowExport, exportImage, estimatedSize, addToast, batchFiles } = useImageStudio();
   const [filename, setFilename] = useState(image?.name ?? 'image');
   const [format, setFormat] = useState(edits.format);
   const [quality, setQuality] = useState(edits.quality);
@@ -30,8 +30,9 @@ export function ExportDialog() {
   if (!showExport || !image) return null;
 
   const estSize = estimatedSize({ format, quality });
-  const needsQuality = format !== 'image/png';
-  const ext = FORMAT_EXT[format] ?? 'png';
+  const needsQuality = format !== 'image/png' && format !== 'image/bmp';
+  const isBatch = batchFiles && batchFiles.length > 1;
+  const ext = isBatch ? 'zip' : (FORMAT_EXT[format] ?? 'png');
 
   const handleExport = async () => {
     setExporting(true);
@@ -162,9 +163,9 @@ export function ExportDialog() {
                 <span className="font-bold text-gray-800 text-right">
                   {edits.outputWidth || image.originalWidth}×{edits.outputHeight || image.originalHeight} px
                 </span>
-                <span className="text-gray-500">Estimated size</span>
+                <span className="text-gray-500">{isBatch ? 'Est. Batch Size' : 'Estimated size'}</span>
                 <span className={`font-bold text-right ${estSize < 500*1024 ? 'text-emerald-600' : 'text-amber-600'}`}>
-                  ~{fmt(estSize)}
+                  {isBatch ? '~' + fmt(estSize * batchFiles.length) : '~' + fmt(estSize)}
                 </span>
               </div>
             </div>
