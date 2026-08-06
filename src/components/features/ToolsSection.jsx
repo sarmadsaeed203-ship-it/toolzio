@@ -1,18 +1,18 @@
 import { ToolCard } from "../shared/ToolCard"
 import { 
   FileText, FileType, FileArchive, 
-  Crop, Eraser, UserSquare2, FileEdit
+  Crop, Eraser, UserSquare2, FileEdit, ImagePlus
 } from "lucide-react"
 
 const ALL_TOOLS = [
-  { id: "pdf-editor", category: "pdf", title: "PDF Studio", description: "Merge, Split, Rotate, Reorder and Organize PDFs in one professional workspace.", icon: FileEdit, link: "/pdf-editor" },
-  { id: "pdf-to-word", category: "pdf", title: "PDF to Word", description: "Convert PDF documents to editable Word files.", icon: FileText, link: "/pdf-to-word" },
-  { id: "word-to-pdf", category: "document", title: "Word to PDF", description: "Convert Word documents to PDF easily.", icon: FileType, link: "/word-to-pdf" },
-  { id: "compress-pdf", category: "pdf", title: "Compress PDF", description: "Reduce file size while optimizing quality.", icon: FileArchive, link: "/compress-pdf" },
-  { id: "bg-remover", category: "image", title: "Background Remover", description: "Automatically remove image backgrounds.", icon: Eraser, link: "/background-remover" },
-  { id: "passport-photo", category: "image", title: "Passport Photo Maker", description: "Create perfect passport photos in seconds.", icon: UserSquare2, link: "/passport-photo-maker" },
-  { id: "image-compress", category: "image", title: "Image Compressor", description: "Compress JPG, PNG, and WebP without losing quality.", icon: FileArchive, link: "/image-compressor" },
-  { id: "image-resize", category: "image", title: "Image Resize", description: "Resize images to exact pixel dimensions.", icon: Crop, link: "/image-resizer" },
+  { id: "image-studio", category: "image", title: "Image Studio", description: "Crop, resize, rotate, flip, adjust brightness and convert images in your browser.", icon: ImagePlus, link: "/image-studio" },
+  { id: "pdf-editor",   category: "pdf",   title: "PDF Studio",   description: "Merge, Split, Rotate, Reorder and Organize PDFs in one professional workspace.",  icon: FileEdit,  link: "/pdf-editor"   },
+  { id: "pdf-to-word",  category: "pdf",   title: "PDF to Word",  description: "Convert PDF documents to editable Word files.",                                   icon: FileText,  link: "/pdf-to-word"  },
+  { id: "word-to-pdf",  category: "document", title: "Word to PDF", description: "Convert Word documents to PDF easily.",                                          icon: FileType,  link: "/word-to-pdf"  },
+  { id: "compress-pdf", category: "pdf",   title: "Compress PDF", description: "Reduce file size while optimizing quality.",                                     icon: FileArchive, link: "/compress-pdf" },
+  { id: "bg-remover",   category: "image", title: "Background Remover",  description: "Automatically remove image backgrounds.",                                    icon: Eraser,    link: "/background-remover"  },
+  { id: "passport-photo", category: "image", title: "Passport Photo Maker", description: "Create perfect passport photos in seconds.",                              icon: UserSquare2, link: "/passport-photo-maker" },
+  { id: "image-resize", category: "image", title: "Image Resize",  description: "Resize images to exact pixel dimensions.",                                       icon: Crop,      link: "/image-resizer"  },
 ]
 
 export function ToolsSection({ activeCategory }) {

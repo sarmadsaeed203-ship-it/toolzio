@@ -9,7 +9,8 @@ const WordToPdf = lazy(() => import("./pages/WordToPdf").then(m => ({ default: m
 const MergePdf = lazy(() => import("./pages/legacy/MergePdf").then(m => ({ default: m.MergePdf })))
 const SplitPdf = lazy(() => import("./pages/legacy/SplitPdf").then(m => ({ default: m.SplitPdf })))
 const CompressPdf = lazy(() => import("./pages/CompressPdf").then(m => ({ default: m.CompressPdf })))
-const PdfEditor = lazy(() => import("./pages/PdfEditor").then(m => ({ default: m.PdfEditor })))
+const PdfEditor = lazy(() => import('./pages/PdfEditor').then(m => ({ default: m.PdfEditor })))
+const ImageStudio = lazy(() => import('./pages/ImageStudio').then(m => ({ default: m.ImageStudio })))
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
               <Route path="/split-pdf" element={<SplitPdf />} />
               <Route path="/compress-pdf" element={<CompressPdf />} />
               <Route path="/pdf-editor" element={<PdfEditor />} />
+              <Route path="/image-studio" element={<ImageStudio />} />
             </Routes>
           </Suspense>
         </AnalyticsProvider>
