@@ -1,4 +1,12 @@
 import os
+
+# Ensure rembg can download models in Vercel's read-only environment
+if os.environ.get("VERCEL"):
+    os.environ["U2NET_HOME"] = "/tmp/u2net"
+else:
+    # Explicitly set it locally just to be safe if needed, though default is fine
+    pass
+
 from PIL import Image
 from rembg import remove, new_session
 

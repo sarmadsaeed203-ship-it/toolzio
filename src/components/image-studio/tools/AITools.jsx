@@ -20,20 +20,23 @@ export function BackgroundPanel() {
       });
 
       if (!res.ok) {
-        throw new Error('Failed to remove background');
+        let errText = 'Failed to remove background';
+        try {
+          const errData = await res.json();
+          errText = errData.detail || errText;
+        } catch (e) {
+          errText = `HTTP ${res.status}: ${res.statusText}`;
+        }
+        throw new Error(errText);
       }
 
       const blob = await res.blob();
       const newFile = new File([blob], `${image.name}_nobg.png`, { type: 'image/png' });
-      // Call loadImage which resets state but keeps the history context clean
-      // Wait, we should probably add this to history instead of completely replacing the file?
-      // Actually, since it changes the source file fundamentally (transparent PNG), 
-      // loadImage is safer for canvas dimensions, but let's just use it for now.
       loadImage(newFile);
       addToast('Background removed successfully!', 'success');
     } catch (err) {
       console.error(err);
-      addToast('Error removing background. Please try again.', 'error');
+      addToast(err.message || 'Error removing background. Please try again.', 'error');
     } finally {
       setRemoving(false);
     }
