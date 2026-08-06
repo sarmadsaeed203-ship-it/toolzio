@@ -8,5 +8,3 @@ reportlab==5.0.0
 docx2pdf==0.1.8
 python-magic; sys_platform != "win32"
 python-magic-bin; sys_platform == "win32"
-rembg==2.0.57
-Pillow==10.4.0

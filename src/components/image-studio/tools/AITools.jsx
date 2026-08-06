@@ -9,33 +9,26 @@ export function BackgroundPanel() {
   const handleRemoveBg = async () => {
     if (!image) return;
     setRemoving(true);
+    addToast('Initializing AI Model (this may take a moment on first run)...', 'info');
     try {
-      const formData = new FormData();
-      formData.append('file', image.file);
-
-      // Using the same URL proxy mechanism assuming backend runs on :8000
-      const res = await fetch('/api/tools/remove-bg', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!res.ok) {
-        let errText = 'Failed to remove background';
-        try {
-          const errData = await res.json();
-          errText = errData.detail || errText;
-        } catch (e) {
-          errText = `HTTP ${res.status}: ${res.statusText}`;
+      // Dynamic import so it doesn't block the main bundle
+      const { removeBackground } = await import('@imgly/background-removal');
+      
+      const imageBlob = await fetch(image.preview).then(r => r.blob());
+      
+      const resultBlob = await removeBackground(imageBlob, {
+        progress: (key, current, total) => {
+          if (total > 0 && current === total) {
+             console.log(`Downloaded ${key}`);
+          }
         }
-        throw new Error(errText);
-      }
-
-      const blob = await res.blob();
-      const newFile = new File([blob], `${image.name}_nobg.png`, { type: 'image/png' });
+      });
+      
+      const newFile = new File([resultBlob], `${image.name}_nobg.png`, { type: 'image/png' });
       loadImage(newFile);
       addToast('Background removed successfully!', 'success');
     } catch (err) {
-      console.error(err);
+      console.error('Background removal failed:', err);
       addToast(err.message || 'Error removing background. Please try again.', 'error');
     } finally {
       setRemoving(false);

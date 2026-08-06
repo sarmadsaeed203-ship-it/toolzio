@@ -21,7 +21,7 @@ from ..services.word_to_pdf import process_word_to_pdf
 from ..services.merge_pdf import process_merge_pdf
 from ..services.split_pdf import process_split_pdf
 from ..services.compress_pdf import process_compress_pdf
-from ..services.remove_bg import process_remove_bg
+from ..services.compress_pdf import process_compress_pdf
 
 router = APIRouter()
 
@@ -255,30 +255,4 @@ async def api_edit_pdf(background_tasks: BackgroundTasks, files: List[UploadFile
         }
     )
 
-@router.post("/remove-bg")
-async def api_remove_bg(background_tasks: BackgroundTasks, file: UploadFile = File(...)):
-    # Allow common image formats
-    temp_path = validate_and_save_file(file, ["image/png", "image/jpeg", "image/webp", "image/bmp", "image/gif"])
-    
-    original_base = os.path.splitext(file.filename)[0]
-    output_filename = f"{original_base}_nobg.png"
-    output_path = os.path.join(settings.OUTPUTS_DIR, get_unique_filename(output_filename))
 
-    try:
-        await run_in_threadpool(process_remove_bg, temp_path, output_path)
-    except Exception as e:
-        background_tasks.add_task(cleanup_files, [temp_path, output_path])
-        raise HTTPException(status_code=500, detail=f"Background removal failed: {str(e)}")
-        
-    background_tasks.add_task(cleanup_files, [temp_path, output_path], delay=2)
-
-    encoded_filename = urllib.parse.quote(output_filename)
-
-    return FileResponse(
-        path=output_path,
-        media_type="image/png",
-        headers={
-            "Content-Disposition": f"attachment; filename*=UTF-8''{encoded_filename}",
-            "Access-Control-Expose-Headers": "Content-Disposition"
-        }
-    )
